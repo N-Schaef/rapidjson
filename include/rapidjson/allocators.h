@@ -89,7 +89,7 @@ public:
         }
         return std::realloc(originalPtr, newSize);
     }
-    static void Free(void *ptr) { std::free(ptr); }
+    static void Free(void *ptr, size_t size) { std::free(ptr); }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -158,7 +158,7 @@ public:
     void Clear() {
         while (chunkHead_ && chunkHead_ != userBuffer_) {
             ChunkHeader* next = chunkHead_->next;
-            baseAllocator_->Free(chunkHead_);
+            baseAllocator_->Free(chunkHead_, chunkHead_->size);
             chunkHead_ = next;
         }
         if (chunkHead_ && chunkHead_ == userBuffer_)

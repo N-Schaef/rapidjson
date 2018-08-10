@@ -175,7 +175,7 @@ public:
     //! Destructor.
     ~GenericPointer() {
         if (nameBuffer_)    // If user-supplied tokens constructor is used, nameBuffer_ is nullptr and tokens_ are not deallocated.
-            Allocator::Free(tokens_);
+            Allocator::Free(tokens_, tokenSize_);
         RAPIDJSON_DELETE(ownAllocator_);
     }
 
@@ -184,7 +184,7 @@ public:
         if (this != &rhs) {
             // Do not delete ownAllcator
             if (nameBuffer_)
-                Allocator::Free(tokens_);
+                Allocator::Free(tokens_,tokenSize_);
 
             tokenCount_ = rhs.tokenCount_;
             parseErrorOffset_ = rhs.parseErrorOffset_;
@@ -769,6 +769,7 @@ private:
 
         tokenCount_ = rhs.tokenCount_ + extraToken;
         tokens_ = static_cast<Token *>(allocator_->Malloc(tokenCount_ * sizeof(Token) + (nameBufferSize + extraNameBufferSize) * sizeof(Ch)));
+        tokenSize_ = tokenCount_ * sizeof(Token) + (nameBufferSize + extraNameBufferSize) * sizeof(Ch);
         nameBuffer_ = reinterpret_cast<Ch *>(tokens_ + tokenCount_);
         if (rhs.tokenCount_ > 0) {
             std::memcpy(tokens_, rhs.tokens_, rhs.tokenCount_ * sizeof(Token));
@@ -818,6 +819,7 @@ private:
                 tokenCount_++;
 
         Token* token = tokens_ = static_cast<Token *>(allocator_->Malloc(tokenCount_ * sizeof(Token) + length * sizeof(Ch)));
+        tokenSize_ = tokenCount_ * sizeof(Token) + length * sizeof(Ch);
         Ch* name = nameBuffer_ = reinterpret_cast<Ch *>(tokens_ + tokenCount_);
         size_t i = 0;
 
@@ -926,10 +928,11 @@ private:
         return;
 
     error:
-        Allocator::Free(tokens_);
+        Allocator::Free(tokens_,tokenSize_);
         nameBuffer_ = 0;
         tokens_ = 0;
         tokenCount_ = 0;
+        tokenSize_ = 0;
         parseErrorOffset_ = i;
         return;
     }
@@ -1044,6 +1047,7 @@ private:
     Ch* nameBuffer_;                        //!< A buffer containing all names in tokens.
     Token* tokens_;                         //!< A list of tokens.
     size_t tokenCount_;                     //!< Number of tokens in tokens_.
+    size_t tokenSize_;                     //!< Number of tokens in tokens_.
     size_t parseErrorOffset_;               //!< Offset in code unit when parsing fail.
     PointerParseErrorCode parseErrorCode_;  //!< Parsing error code.
 };
