@@ -15,6 +15,7 @@
 #ifndef RAPIDJSON_DOCUMENT_H_
 #define RAPIDJSON_DOCUMENT_H_
 
+class DocumentCostHandler;
 /*! \file document.h */
 
 #include "reader.h"
@@ -574,6 +575,7 @@ template <bool, typename> class GenericObject;
 template <typename Encoding, typename Allocator = MemoryPoolAllocator<> > 
 class GenericValue {
 public:
+    friend class ::DocumentCostHandler;
     //! Name-value pair in an object.
     typedef GenericMember<Encoding, Allocator> Member;
     typedef Encoding EncodingType;                  //!< Encoding type from template parameter.
